@@ -1,0 +1,5 @@
+Get beep speaker sounds working:
+
+1.Init the speaker "sudo modprobe pcspkr" into linux shell
+2.Open game using sudo ./a.ou
+3.Enjoy the horrible sound of beeps
