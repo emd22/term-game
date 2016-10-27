@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <gamespace>
-	<entity x="29" y="9" style="44499"/>
-	<entity x="35" y="4" style="44499"/>
-	<entity x="35" y="6" style="44499"/>
-	<entity x="5" y="11" style="44499"/>
-	<entity x="41" y="8" style="44499"/>
+	<entity x="34" y="14" style="44499"/>
+	<entity x="20" y="14" style="44499"/>
+	<entity x="20" y="12" style="44499"/>
+	<entity x="14" y="3" style="44499"/>
+	<entity x="6" y="7" style="44499"/>
 	<entity x="0" y="1" style="8689378"/>
 	<entity x="1" y="1" style="8689378"/>
 	<entity x="2" y="1" style="8689378"/>

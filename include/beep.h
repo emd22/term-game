@@ -1,7 +1,13 @@
 #pragma once
 
+#include <vector>
 #include <map>
 #include <array>
+
+#include "note.h"
+#include "random_music.h"
+
+bool can_beep = true;
 
 #ifdef _WIN32
 #include <WinBase.h>
@@ -16,6 +22,7 @@ void beep(int freq = 440, int len = 200){
 #include <linux/kd.h>
 #include <sys/ioctl.h>
 #include <thread>
+#include <iostream>
 
 int beeper;
 
@@ -31,33 +38,15 @@ void close_beeper()
 }
 
 void beep(int freq = 440, int len = 200){
-    ioctl(beeper, KIOCSOUND, (int)(1193180/freq));
-    std::this_thread::sleep_for(std::chrono::milliseconds(len));
-    ioctl(beeper, KIOCSOUND, 0);
+    if (freq > 0 && freq < 2000){
+      ioctl(beeper, KIOCSOUND, (int)(1193180/freq));
+      std::this_thread::sleep_for(std::chrono::milliseconds(len));
+      ioctl(beeper, KIOCSOUND, 0);
+    }
+
 }
 
 #endif
-
-
-enum Note {
-    NOTE_C,
-    NOTE_CSHARP,
-    NOTE_D,
-    NOTE_DSHARP,
-    NOTE_E,
-    NOTE_F,
-    NOTE_FSHARP,
-    NOTE_G,
-    NOTE_GSHARP,
-    NOTE_A,
-    NOTE_ASHARP,
-    NOTE_B,
-    NOTE_HIGHC,
-    NOTE_HIGHCSHARP,
-    NOTE_HIGHD,
-    NOTE_HIGHDSHARP,
-    NOTE_HIGHE,
-};
 
 class NotePlayer {
 public:
@@ -92,3 +81,67 @@ public:
     NOTE_C, NOTE_D, NOTE_E, NOTE_F, NOTE_G, NOTE_A, NOTE_B
   };
 };
+
+void beep_func() {
+  NotePlayer note_player;
+
+  bool do_backwards = false;
+  bool backwards = false;
+  int i = 0;
+
+  /*std::vector<Note> song = {
+    NOTE_A, NOTE_A, NOTE_HIGHC, NOTE_A,
+    NOTE_A, NOTE_A, NOTE_B, NOTE_A,
+    NOTE_A, NOTE_A, NOTE_HIGHC, NOTE_A,
+    NOTE_A, NOTE_A, NOTE_HIGHE, NOTE_HIGHD,
+  };
+  std::vector<Note> song = {
+    NOTE_E, NOTE_A, NOTE_G, NOTE_A,
+    NOTE_G, NOTE_E, NOTE_A, NOTE_G,
+    NOTE_A, NOTE_G, NOTE_HIGHC, NOTE_A,
+    NOTE_A, NOTE_A, NOTE_HIGHE, NOTE_HIGHD,
+  };
+
+  // cool creepy song
+  std::vector<Note> song = {
+    NOTE_A, NOTE_B, NOTE_CSHARP, NOTE_A, NOTE_B, NOTE_CSHARP,
+    NOTE_A, NOTE_B, NOTE_CSHARP, NOTE_A, NOTE_B, NOTE_CSHARP,
+    NOTE_B, NOTE_C, NOTE_HIGHD, NOTE_B, NOTE_C, NOTE_HIGHD,
+    NOTE_B, NOTE_C, NOTE_HIGHD, NOTE_B, NOTE_C, NOTE_HIGHD,
+  };*/
+
+  std::vector<Note> song;
+  generate_random_song(song, 15);
+
+  std::cout << "NOTES: \n";
+  for (auto &note : song) {
+    std::cout << "\t" << note << "\n";
+  }
+
+  while (can_beep) {
+
+    if (do_backwards) {
+      if (!backwards && i == note_player.c_major_scale.size() - 1) {
+        backwards = true;
+      } else if (backwards && i == 0) {
+        backwards = false;
+      }
+    } else {
+      if (i == song.size()) {
+        i = 0;
+      }
+    }
+
+    Note note = song.at(/*randrange(0, 6)*/ i);
+    //std::cout << "got note: " << note << "\t\t\n";
+    note_player.PlayNote(note, randrange(40, 200));
+
+    if (do_backwards && backwards) {
+      i--;
+    } else {
+      i++;
+    }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  }
+}

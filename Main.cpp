@@ -12,6 +12,7 @@
 #include <fcntl.h>
 #include <linux/kd.h>
 #include <sys/ioctl.h>
+#include <ctime>
 
 #include "include/GetCh.h"
 #include "include/ColorText.h"
@@ -21,11 +22,9 @@
 #include "include/Util.h"
 #include "include/xml_writer.h"
 #include "include/beep.h"
-
+#include "include/random_music.h"
 
 typedef std::shared_ptr<Entity> EntityPtr;
-
-bool can_beep = true;
 
 struct BeeperFixer {
   BeeperFixer()
@@ -42,69 +41,24 @@ struct BeeperFixer {
   }
 };
 
-void beep_func() {
-  NotePlayer note_player;
-
-  bool do_backwards_thing = false;
-  bool backwards = false;
-  int i = 0;
-
-  /*std::vector<Note> song = {
-    NOTE_A, NOTE_A, NOTE_HIGHC, NOTE_A,
-    NOTE_A, NOTE_A, NOTE_B, NOTE_A,
-    NOTE_A, NOTE_A, NOTE_HIGHC, NOTE_A,
-    NOTE_A, NOTE_A, NOTE_HIGHE, NOTE_HIGHD,
-  };*/
-  std::vector<Note> song = {
-    NOTE_E, NOTE_A, NOTE_G, NOTE_A,
-    NOTE_G, NOTE_E, NOTE_A, NOTE_G,
-    NOTE_A, NOTE_G, NOTE_HIGHC, NOTE_A,
-    NOTE_A, NOTE_A, NOTE_HIGHE, NOTE_HIGHD,
-  };
-
-  while (can_beep) {
-
-    if (do_backwards_thing) {
-      if (!backwards && i == note_player.c_major_scale.size() - 1) {
-        backwards = true;
-      } else if (backwards && i == 0) {
-        backwards = false;
-      }
-    } else {
-      if (i == song.size()) {
-        i = 0;
-      }
-    }
-
-    Note note = song.at(/*randrange(0, 6)*/ i);
-
-    note_player.PlayNote(note, 500);
-
-    if (do_backwards_thing && backwards) {
-      i--;
-    } else {
-      i++;
-    }
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-  }
-}
-
 int main()
 {
+    srand(std::time(0));
+
     open_beeper();
     atexit(close_beeper);
-
-
 
     std::thread beep_thread(beep_func);
 
     int update_counter = 0;
+    bool play_music = true;
 
     #ifdef _WIN32
     int temp = system("cls");
     #else
-    int temp = system("clear");
+    int temp1 = system("sudo modprobe pcspkr");
+    int temp2 = system("clear");
+    int temp3 = system("stty -echo");
     #endif
 
     utf8_init();
@@ -178,6 +132,12 @@ int main()
         }
         if (getchar == 'd') {
             x++;
+        }
+        if (getchar == 'q') {
+            beep_thread.detach();
+            beep(500, 1500);
+            int temp4 = system("stty echo");
+            return 0;
         }
 
         if (getchar) {
